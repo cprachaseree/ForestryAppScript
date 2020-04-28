@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <base target="_top">
+    <link rel="stylesheet" href="https://ssl.gstatic.com/docs/script/css/add-ons1.css">
+  </head>
+  
+  <body>
+    <h1>Forestry</h1>
+    <div id="error"></div>
+    <button id="get-user-text">Get user Text</button>
+    <br>
+    <button id="generate-tree">Generate Tree</button>
+    <br>
+    <textarea class="width-100" id="text-area" rows="10"></textarea>
+    <br>
+    <div id="overview"></div>
+    <div id="generated-tables">
+      <table class="table" id="concepts-table" width=300px>
+        <tbody></tbody>
+      </table>
+      <table class="table" id="categories-table" width=300px>
+        <tbody></tbody>
+      </table>
+      <table class="table" id="entities-table" width=300px>
+        <tbody></tbody>
+      </table>
+      <table class="table" id="keywords-table" width=300px>
+        <tbody></tbody>
+      </table>
+    </div>
+  </body>
+  
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+  <script>
+    $(function() {
+      $('#text-area').hide();
+      $('#get-user-text').click(userInTextArea);
+      $('#generate-tree').click(generateTreeClicked);
+    });
+    $(document).on('DOMSubtreeModified', '#link', function() {
+      alert("Linked changed.");
+      $('#sheet').click();
+    });
+    
+     function errorMsg(error) {
+       $('#error').text(msg);
+     }
+    
+    function userInTextArea() {
+      google.script.run
+        .withSuccessHandler(
+          function(userText) {
+            $('#text-area').val(userText);
+            $('#text-area').show();
+          })
+        .withFailureHandler(errorMsg)
+        .getUserText();
+     }
+     
+     function generateTreeClicked() {
+       google.script.run
+         .withSuccessHandler(generate)
+         .withFailureHandler(errorMsg)
+         .getEntitiesFromText();
+     }
+     
+     function generate(response) {
+       $('#overview').append("<p>Characters: " + response.usage.text_characters + "</p>");
+       // categories, entities, concepts, keywords
+       /*
+       var concepts = JSON.parse(response).concepts;
+       var categories = JSON.parse(response).categories;
+       var entities = JSON.parse(response).entities;
+       var keywords = JSON.parse(response).keywords;*/
+       var concepts = response.concepts;
+       var categories = response.categories;
+       var entities = response.entities;
+       var keywords = response.keywords;
+       
+       categories.forEach(function(category) {
+         $('#categories-table > tbody').append("<tr><td>" + category.label + "</td><td>" + category.score + "</td></tr>");
+       });
+       
+       entities.forEach(function(entity) {
+         $('#entities-table > tbody').append("<tr><td>" + entity.text + "</td><td>" + entity.relevance + "</td><td>" + entity.confidence + "</td><td>" + entity.count + "</td></tr>");
+       });
+       
+       concepts.forEach(function(concept) {
+         $('#concepts-table > tbody').append("<tr><td>" + concept.text + "</td><td>" + concept.relevance + "</td><td>" + concept.dbpedia_resource + "</td></tr>");
+       });
+     
+       keywords.forEach(function(keyword) {
+         $('#keywords-table > tbody').append("<tr><td>" + keyword.text + "</td><td>" + keyword.relevance + "</td><td>" + keyword.count + "</td></tr>");
+       });
+       google.script.run
+        .withSuccessHandler()
+        .withFailureHandler(errorMsg)
+        .createSpreadSheet();
+     }
+  </script>
+</html>
+
+
