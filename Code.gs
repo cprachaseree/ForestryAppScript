@@ -18,15 +18,6 @@ function getUserText(){
   return doc.getBody().getText();
 }
 
-function createSpreadSheet() {
-  var sheet = SpreadsheetApp.create("Forestry simplified Tables");
-  
-  var html = HtmlService.createHtmlOutput('View your tables <a href="' + sheet.getUrl() + '" target="_blank">here</a>!')
-      .setWidth(300)
-      .setHeight(200);
-  DocumentApp.getUi()
-      .showModalDialog(html, 'Tables created!');
-}
 
 function getEntitiesFromText() {
   /*
