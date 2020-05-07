@@ -33,7 +33,7 @@
     </div>
   </body>
   <script src="https://code.jquery.com/jquery-3.5.0.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
-  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
   <script type="text/javascript">
     $(document).ready(function() {
     console.log("loaded");
@@ -113,30 +113,36 @@
        
        var width = 300;
        var height = 400;
-       
+       var id = 0;
        response.forEach(function(concept) {
-         console.log(JSON.stringify(concept));
          var svg = d3.select("body").append("svg")
+           .attr("id", "svg-" + id)
            .attr("width", width)
-           .attr("height", height); 
+           .attr("height", height);
+         $('#svg-' + id).before('<button id=btn-' + id +'>Export this tree below</button>');
+         id++;
+         
+         $('#btn-' + id).click(function() {
+           exportSVG(id);
+         });
          
          var item = concept.itemListElement[0];
          var stringA = (item.result.detailedDescription.articleBody).split('');
-         for (var i = 8; i < (item.result.detailedDescription.articleBody).length; i += 15){
+         for (var i = 15; i < (item.result.detailedDescription.articleBody).length; i += 15){
            stringA.splice(i, 0, "\n");
          }
          stringA = stringA.join('');
          console.log(stringA);
          var nodes_data = [
            { "name": item.result.name, "color": "blue", "r": 14 },
-           { "name": item["@type"], "color": "red" , "r": 10 },
+           { "name": item.result["@type"][0], "color": "red" , "r": 10 },
            { "name": "description", "color": "green", "r": 12 },
            { "name": stringA, "color": "red", "r": 12 },
            { "name": "image", "color": "green", "r": 12 },
            { "name": item.result.image.url, "color": "red", "r": 10 }
          ];
          var links_data = [
-           {"source": item.result.name, "target": item["@type"] },
+           {"source": item.result.name, "target": item.result["@type"][0] },
            {"source": item.result.name, "target": "description" },
            {"source": "description", "target": stringA },
            {"source": item.result.name, "target": "image" },
@@ -174,72 +180,70 @@
             .on("drag", dragged)
             .on("end", dragended));
 
-  var lables = node.append("text")
-      .text(function(d) {
-        return d.name;
-      })
-      .attr('x', 8)
-      .attr('y', 8);
-/*
-  node.append("title")
-      .text(function(d) {
-        return d.name;
-      });*/
+          var lables = node.append("text")
+            .text(function(d) {
+              return d.name;
+            })
+            .attr('x', 8)
+            .attr('y', 8);
 
-  simulation
-      .nodes(nodes_data)
-      .on("tick", ticked);
+          simulation
+            .nodes(nodes_data)
+            .on("tick", ticked);
 
-  simulation.force("link")
-      .links(links_data);
+          simulation.force("link")
+            .links(links_data);
   
-  var insertLinebreaks = function (d) {
-    var el = d3.select(this);
-    var words = d.name.split('\n');
-    el.text('');
+          var insertLinebreaks = function (d) {
+            var el = d3.select(this);
+            var words = d.name.split('\n');
+            el.text('');
 
-    for (var i = 0; i < words.length; i++) {
-        var tspan = el.append('tspan').text(words[i]);
-        if (i > 0)
-            tspan.attr('x', 0).attr('dy', '15');
-    }
-};
+            for (var i = 0; i < words.length; i++) {
+              var tspan = el.append('tspan').text(words[i]);
+              if (i > 0)
+                tspan.attr('x', 0).attr('dy', '15');
+           }
+         };
 
-svg.selectAll('text').each(insertLinebreaks);
+         svg.selectAll('text').each(insertLinebreaks);
 
-  function ticked() {
-    link
-        .attr("x1", function(d) { return d.source.x; })
-        .attr("y1", function(d) { return d.source.y; })
-        .attr("x2", function(d) { return d.target.x; })
-        .attr("y2", function(d) { return d.target.y; });
+         function ticked() {
+           link
+            .attr("x1", function(d) { return d.source.x; })
+            .attr("y1", function(d) { return d.source.y; })
+            .attr("x2", function(d) { return d.target.x; })
+            .attr("y2", function(d) { return d.target.y; });
 
-    node
-        .attr("transform", function(d) {
-          return "translate(" + d.x + "," + d.y + ")";
-        })
-  }
+           node
+            .attr("transform", function(d) {
+              return "translate(" + d.x + "," + d.y + ")";
+            })
+         }
 
-function dragstarted(d) {
-  if (!d3.event.active) simulation.alphaTarget(0.3).restart();
-  d.fx = d.x;
-  d.fy = d.y;
-}
+         function dragstarted(d) {
+           if (!d3.event.active) simulation.alphaTarget(0.3).restart();
+             d.fx = d.x;
+             d.fy = d.y;
+         }
 
-function dragged(d) {
-  d.fx = d3.event.x;
-  d.fy = d3.event.y;
-}
+         function dragged(d) {
+           d.fx = d3.event.x;
+           d.fy = d3.event.y;
+         }
 
-function dragended(d) {
-  if (!d3.event.active) simulation.alphaTarget(0);
-  d.fx = null;
-  d.fy = null;
-}
+         function dragended(d) {
+           if (!d3.event.active) simulation.alphaTarget(0);
+             d.fx = null;
+             d.fy = null;
+         }
        });
-
-}    
-
+     }
+     
+     // TODO export the image
+     function exportSVG(id) {
+       alert("clicked id: " + id);
+     }
   </script>
 </html>
 
