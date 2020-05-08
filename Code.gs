@@ -13,9 +13,7 @@ function showSidebar() {
   DocumentApp.getUi().showSidebar(ui);
 }
 
-function getUserText(){
+function getUserText() {
   var doc = DocumentApp.getActiveDocument();
   return doc.getBody().getText();
 }
-
-

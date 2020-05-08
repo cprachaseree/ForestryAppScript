@@ -139,14 +139,14 @@
            { "name": "description", "color": "green", "r": 12 },
            { "name": stringA, "color": "red", "r": 12 },
            { "name": "image", "color": "green", "r": 12 },
-           { "name": item.result.image.url, "color": "red", "r": 10 }
+           { "name": item.result.image.contentUrl, "color": "red", "r": 10, "image": true }
          ];
          var links_data = [
            {"source": item.result.name, "target": item.result["@type"][0] },
            {"source": item.result.name, "target": "description" },
            {"source": "description", "target": stringA },
            {"source": item.result.name, "target": "image" },
-           {"source": "image", "target": item.result.image.url }
+           {"source": "image", "target": item.result.image.contentUrl }
          ];
          
          // force of the links
@@ -162,6 +162,14 @@
            .selectAll("g")
            .data(nodes_data)
            .enter().append("g")
+         
+         node.filter(function(d) { return d.image })
+           .append("svg:image")
+           .attr("xlink:href", function(d) { return d.name; })
+           .attr("x", "-12px")
+           .attr("y", "-44px")
+           .attr("width", "40px")
+           .attr("height", "40px");
 
          var link = svg.append("g")
            .attr("class", "links")
@@ -238,11 +246,17 @@
              d.fy = null;
          }
        });
+       createExportBtn(id);
      }
      
-     // TODO export the image
-     function exportSVG(id) {
-       alert("clicked id: " + id);
+     function createExportBtn(id) {
+       var btnid;
+       for (var i = 0; i < id; i++) {
+         $(document).on('click', '#btn-' + i, function() {
+           btnid = event.target.id;
+           console.log(btnid);
+         });
+       }
      }
   </script>
 </html>

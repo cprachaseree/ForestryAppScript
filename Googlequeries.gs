@@ -5,7 +5,6 @@ function getKnowledgeFromText() {
   var concepts = data.concepts;
   var ret = [];
   concepts.forEach(function(concept) {
-    var obj = {};
     Logger.log(concept.text);
     var options = {
       "method": "GET",
