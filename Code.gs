@@ -17,3 +17,7 @@ function getUserText() {
   var doc = DocumentApp.getActiveDocument();
   return doc.getBody().getText();
 }
+
+function newPage(page) {
+  return HtmlService.createHtmlOutputFromFile(page).getContent()
+}

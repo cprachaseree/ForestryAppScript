@@ -7,6 +7,7 @@
   
   <body>
     <h1>Forestry</h1>
+    
     <div id="error"></div>
     <button id="get-user-text">Get user Text</button>
     <br>
@@ -31,13 +32,16 @@
         <tbody></tbody>
       </table>
     </div>
+    <canvas id="canvas" width="800" height="400"></canvas>
   </body>
   <script src="https://code.jquery.com/jquery-3.5.0.min.js" integrity="sha256-xNzN2a4ltkB44Mc/Jz3pT4iU1cmeR0FkXs4pru/JxaQ=" crossorigin="anonymous"></script>
   <script type="text/javascript" src="https://d3js.org/d3.v5.min.js"></script>
+	
   <script type="text/javascript">
     $(document).ready(function() {
     console.log("loaded");
       $('#text-area').hide();
+      $('#canvas').hide();
       $('#get-user-text').click(userInTextArea);
       $('#generate-table').click(generateTablesClicked);
       $('#generate-tree').click(generateTreesClicked);
@@ -119,12 +123,14 @@
            .attr("id", "svg-" + id)
            .attr("width", width)
            .attr("height", height);
-         $('#svg-' + id).before('<button id=btn-' + id +'>Export this tree below</button>');
-         id++;
+         $('#svg-' + id).before('<button id=btn-' + id +'>View this tree below in another tab</button>');
          
+         id++;
+         /*
          $('#btn-' + id).click(function() {
            exportSVG(id);
          });
+         */
          
          var item = concept.itemListElement[0];
          var stringA = (item.result.detailedDescription.articleBody).split('');
@@ -245,16 +251,39 @@
              d.fx = null;
              d.fy = null;
          }
+         $('#svg-' + id).attr("xmlns", "http://www.w3.org/2000/svg")
+           .attr("xmlns:xlink", "http://www.w3.org/1999/xlink");
        });
        createExportBtn(id);
      }
      
      function createExportBtn(id) {
-       var btnid;
+       var btnid, split, id, svg;
        for (var i = 0; i < id; i++) {
          $(document).on('click', '#btn-' + i, function() {
            btnid = event.target.id;
-           console.log(btnid);
+           split = btnid.toString().split("-");
+           id = split[1];
+           console.log(id);
+           svg = d3.select('#svg-' + id);
+           var svgString = new XMLSerializer().serializeToString(svg.node());
+           $('#canvas').show();
+           
+           var canvas = document.getElementById("canvas");
+           var ctx = canvas.getContext("2d");
+           var DOMURL = self.URL || self.webkitURL || self;
+           var img = new Image();
+           var svg = new Blob([svgString], {type: "image/svg+xml;charset=utf-8"});
+           var url = DOMURL.createObjectURL(svg);
+           img.onload = function() {
+             ctx.drawImage(img, 0, 0);
+             var png = canvas.toDataURL("image/png");
+             var myWindow = window.open("", "View Image", "_blank", "toolbar=no,scrollbars=no,resizable=yes");
+             myWindow.document.body.innerHTML += "<body><a download='' href=" + png +">Click to Download</a><img src=" + png + "></body>";
+           };
+           img.src = url;
+           
+           $('#canvas').hide();
          });
        }
      }
