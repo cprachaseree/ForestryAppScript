@@ -9,7 +9,6 @@
     <h1>Forestry</h1>
     
     <div id="error"></div>
-    <button id="get-user-text">Get user Text</button>
     <br>
     <button id="generate-table">Generate Table</button>
     <br>
@@ -19,15 +18,8 @@
     <br>
     <div id="overview"></div>
     <div id="generated-tables">
-      <table class="table" id="concepts-table" width=300px>
-        <tbody></tbody>
-      </table>
-      <table class="table" id="categories-table" width=300px>
-        <tbody></tbody>
-      </table>
-      <table class="table" id="entities-table" width=300px>
-        <tbody></tbody>
-      </table>
+      <button id="clear-highlights">Clear highlights</button>
+      <p>Press the keywords to highlight them in the document</p>
       <table class="table" id="keywords-table" width=300px>
         <tbody></tbody>
       </table>
@@ -42,6 +34,7 @@
     console.log("loaded");
       $('#text-area').hide();
       $('#canvas').hide();
+      $('#generated-tables').hide();
       $('#get-user-text').click(userInTextArea);
       $('#generate-table').click(generateTablesClicked);
       $('#generate-tree').click(generateTreesClicked);
@@ -76,19 +69,24 @@
          .getKnowledgeFromText();
      }
      
-     function generate(response) {
+     function highlight(keyword) {
+       console.log(keyword);
+       google.script.run
+         .withSuccessHandler()
+         .withFailureHandler(errorMsg)
+         .highlightTexts(keyword);
+     }
+     
+     function generate(res) {
+       $('#generated-tables').show();
+       var response = JSON.parse(res);
+       console.log(response);
        $('#overview').append("<p>Characters: " + response.usage.text_characters + "</p>");
-       // categories, entities, concepts, keywords
-       /*
-       var concepts = JSON.parse(response).concepts;
-       var categories = JSON.parse(response).categories;
-       var entities = JSON.parse(response).entities;
-       var keywords = JSON.parse(response).keywords;*/
        var concepts = response.concepts;
        var categories = response.categories;
        var entities = response.entities;
        var keywords = response.keywords;
-       
+       /*
        categories.forEach(function(category) {
          $('#categories-table > tbody').append("<tr><td>" + category.label + "</td><td>" + category.score + "</td></tr>");
        });
@@ -100,21 +98,25 @@
        concepts.forEach(function(concept) {
          $('#concepts-table > tbody').append("<tr><td>" + concept.text + "</td><td>" + concept.relevance + "</td><td>" + concept.dbpedia_resource + "</td></tr>");
        });
-     
+     */
        keywords.forEach(function(keyword) {
-         $('#keywords-table > tbody').append("<tr><td>" + keyword.text + "</td><td>" + keyword.relevance + "</td><td>" + keyword.count + "</td></tr>");
+         $('#keywords-table > tbody').append("<tr><td onclick='highlight(\"" + keyword.text + "\")'>" + keyword.text + "</td><td>" + keyword.relevance + "</td><td>" + keyword.count + "</td></tr>");
        });
        google.script.run
         .withSuccessHandler()
         .withFailureHandler(errorMsg)
-        .createSpreadSheet();
+        .createSpreadSheet(concepts, categories, entities, keywords);
      }
+     
+     $(document).on('click', '#clear-highlights', function() {
+       google.script.run
+        .withSuccessHandler()
+        .withFailureHandler(errorMsg)
+        .clearHighlights();
+     });
      
      function generateTree(response) {
        console.log(response);
-       // check if d3 can be selected
-       //create somewhere to put the force directed graph
-       
        var width = 300;
        var height = 400;
        var id = 0;
@@ -126,12 +128,6 @@
          $('#svg-' + id).before('<button id=btn-' + id +'>View this tree below in another tab</button>');
          
          id++;
-         /*
-         $('#btn-' + id).click(function() {
-           exportSVG(id);
-         });
-         */
-         
          var item = concept.itemListElement[0];
          var stringA = (item.result.detailedDescription.articleBody).split('');
          for (var i = 15; i < (item.result.detailedDescription.articleBody).length; i += 15){
