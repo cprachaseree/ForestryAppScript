@@ -50,3 +50,4 @@ function clearHighlights() {
     el.asText().setBackgroundColor(null);
   }
 }
+

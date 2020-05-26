@@ -10,13 +10,12 @@
     
     <div id="error"></div>
     <br>
+    <button id="refresh-text">Refresh</button>
+    <br>
     <button id="generate-table">Generate Table</button>
     <br>
     <button id="generate-tree">Generate Tree</button>
     <br>
-    <textarea class="width-100" id="text-area" rows="10"></textarea>
-    <br>
-    <div id="overview"></div>
     <div id="generated-tables">
       <button id="clear-highlights">Clear highlights</button>
       <p>Press the keywords to highlight them in the document</p>
@@ -31,13 +30,12 @@
 	
   <script type="text/javascript">
     $(document).ready(function() {
-    console.log("loaded");
-      $('#text-area').hide();
       $('#canvas').hide();
       $('#generated-tables').hide();
       $('#get-user-text').click(userInTextArea);
       $('#generate-table').click(generateTablesClicked);
       $('#generate-tree').click(generateTreesClicked);
+      $('#refresh-text').click(refreshText);
     });
     
      function errorMsg(error) {
@@ -53,6 +51,18 @@
           })
         .withFailureHandler(errorMsg)
         .getUserText();
+     }
+     
+     function refreshText() {
+       google.script.run
+         .withSuccessHandler(refreshHtml)
+         .withFailureHandler(errorMsg)
+         .refresh();
+     }
+     
+     function refreshHtml() {
+       $('#canvas').hide();
+       $('#generated-tables').hide();
      }
      
      function generateTablesClicked() {
@@ -80,25 +90,11 @@
      function generate(res) {
        $('#generated-tables').show();
        var response = JSON.parse(res);
-       console.log(response);
-       $('#overview').append("<p>Characters: " + response.usage.text_characters + "</p>");
        var concepts = response.concepts;
        var categories = response.categories;
        var entities = response.entities;
        var keywords = response.keywords;
-       /*
-       categories.forEach(function(category) {
-         $('#categories-table > tbody').append("<tr><td>" + category.label + "</td><td>" + category.score + "</td></tr>");
-       });
-       
-       entities.forEach(function(entity) {
-         $('#entities-table > tbody').append("<tr><td>" + entity.text + "</td><td>" + entity.relevance + "</td><td>" + entity.confidence + "</td><td>" + entity.count + "</td></tr>");
-       });
-       
-       concepts.forEach(function(concept) {
-         $('#concepts-table > tbody').append("<tr><td>" + concept.text + "</td><td>" + concept.relevance + "</td><td>" + concept.dbpedia_resource + "</td></tr>");
-       });
-     */
+       $('#keywords-table > tbody').empty();
        keywords.forEach(function(keyword) {
          $('#keywords-table > tbody').append("<tr><td onclick='highlight(\"" + keyword.text + "\")'>" + keyword.text + "</td><td>" + keyword.relevance + "</td><td>" + keyword.count + "</td></tr>");
        });

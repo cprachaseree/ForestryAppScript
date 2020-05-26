@@ -1,8 +1,8 @@
 function getKnowledgeFromText() {
   var apiKey = getGoogleAPI();
   var url = getGoogleURL() + "?limit=1&key=" + apiKey + "&query=";
-  var data = getEntitiesFromText();
-  var concepts = data.concepts;
+  var data = JSON.parse(getEntitiesFromText());
+  var concepts = data.concepts
   var ret = [];
   concepts.forEach(function(concept) {
     Logger.log(concept.text);

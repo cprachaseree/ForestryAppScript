@@ -1,4 +1,4 @@
-function createSpreadSheet() {
+function createSpreadSheet(concepts, categories, entities, keywords) {
   var ui = DocumentApp.getUi();
   var result = ui.prompt("Please the enter the file name:");
   var button = result.getSelectedButton();
@@ -18,12 +18,6 @@ function createSpreadSheet() {
   var entitiesSheet = spreadSheets.insertSheet("Entities");
   var keywordsSheet = spreadSheets.insertSheet("Keywords");
   spreadSheets.deleteSheet(spreadSheets.getSheetByName("Sheet1"));
-  
-  var data = getEntitiesFromText();
-  var concepts = data.concepts;
-  var categories = data.categories;
-  var entities = data.entities;
-  var keywords = data.keywords;
   
   var conceptsArray = [];
   conceptsArray.push(["Concept", "Relevance", "Resource"]);
