@@ -63,6 +63,10 @@
      function refreshHtml() {
        $('#canvas').hide();
        $('#generated-tables').hide();
+       $('#keywords-table > tbody').empty();
+       $('canvas').empty();
+       $('svg').remove();
+       $('.export-btn').remove();
      }
      
      function generateTablesClicked() {
@@ -121,31 +125,43 @@
            .attr("id", "svg-" + id)
            .attr("width", width)
            .attr("height", height);
-         $('#svg-' + id).before('<button id=btn-' + id +'>View this tree below in another tab</button>');
+         $('#svg-' + id).before('<button id=btn-' + id +' class="export-btn">View this tree below in another tab</button>');
          
          id++;
          var item = concept.itemListElement[0];
+         console.log(item);
          var stringA = (item.result.detailedDescription.articleBody).split('');
          for (var i = 15; i < (item.result.detailedDescription.articleBody).length; i += 15){
            stringA.splice(i, 0, "\n");
          }
          stringA = stringA.join('');
-         console.log(stringA);
          var nodes_data = [
            { "name": item.result.name, "color": "blue", "r": 14 },
            { "name": item.result["@type"][0], "color": "red" , "r": 10 },
            { "name": "description", "color": "green", "r": 12 },
            { "name": stringA, "color": "red", "r": 12 },
-           { "name": "image", "color": "green", "r": 12 },
-           { "name": item.result.image.contentUrl, "color": "red", "r": 10, "image": true }
+           { "name": "image", "color": "green", "r": 12 }
          ];
+         
+         if (item.result.image) {
+           nodes_data.push(
+             { "name": item.result.image.contentUrl, "color": "red", "r": 10, "image": true }
+           );
+         }
+         
          var links_data = [
            {"source": item.result.name, "target": item.result["@type"][0] },
            {"source": item.result.name, "target": "description" },
            {"source": "description", "target": stringA },
-           {"source": item.result.name, "target": "image" },
-           {"source": "image", "target": item.result.image.contentUrl }
+           {"source": item.result.name, "target": "image" }
          ];
+         
+         if (item.result.image) {
+           links_data.push(
+             {"source": "image", "target": item.result.image.contentUrl }
+           );
+         }
+         
          
          // force of the links
          var simulation = d3.forceSimulation()
@@ -253,6 +269,7 @@
        var btnid, split, id, svg;
        for (var i = 0; i < id; i++) {
          $(document).on('click', '#btn-' + i, function() {
+           console.log("Exporting " + i);
            btnid = event.target.id;
            split = btnid.toString().split("-");
            id = split[1];
