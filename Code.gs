@@ -22,6 +22,7 @@ function newPage(page) {
   return HtmlService.createHtmlOutputFromFile(page).getContent()
 }
 
+// https://stackoverflow.com/questions/12064972/can-i-color-certain-words-in-google-document-using-google-apps-script
 function highlightTexts(keyword) {
   var bodyElement = DocumentApp.getActiveDocument().getBody();
   var searchResult = bodyElement.findText(keyword);
@@ -34,6 +35,7 @@ function highlightTexts(keyword) {
   }
 }
 
+// https://stackoverflow.com/questions/58330589/how-to-make-the-entire-google-docs-document-un-highlighted-google-apps-script
 function clearHighlights() {
   var doc=DocumentApp.getActiveDocument();
   var rangeBuilder=doc.newRange();
